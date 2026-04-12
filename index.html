@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>DC Office Bidar | Census Records & Self Enumeration Portal</title>
+    <meta name="description" content="Official DC Office Bidar - Census Self Enumeration (SE) registration and department submission portal for Karnataka state records.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background: #f0f4f8;
+            color: #1a2c3e;
+            line-height: 1.5;
+        }
+
+        /* tri-color & gov theme */
+        :root {
+            --saffron: #FF8C00;
+            --white: #FFFFFF;
+            --green: #138808;
+            --deep-blue: #002b5c;
+            --gray-soft: #f9fafc;
+            --border-light: #e2e8f0;
+            --shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.02);
+            --shadow-md: 0 12px 28px rgba(0, 0, 0, 0.08);
+            --error: #dc2626;
+            --success: #15803d;
+        }
+
+        /* header styling */
+        .top-tricolor {
+            height: 6px;
+            background: linear-gradient(90deg, var(--saffron) 0%, var(--saffron) 33.33%, var(--white) 33.33%, var(--white) 66.66%, var(--green) 66.66%, var(--green) 100%);
+        }
+
+        .header-main {
+            background: white;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            z-index: 10;
+        }
+
+        .header-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 1.5rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 0.75rem;
+        }
+
+        .brand {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .emblem {
+            height: 85px;
+            width: auto;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+            display: block;
+            margin: 0 auto;
+        }
+
+        .title-group {
+            text-align: center;
+        }
+
+        .title-group h1 {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: var(--deep-blue);
+            letter-spacing: -0.3px;
+            line-height: 1.3;
+            margin: 0;
+        }
+
+        .title-group .sub {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #2c3e66;
+            letter-spacing: 1px;
+            margin-top: 8px;
+            background: #eef2ff;
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 30px;
+        }
+
+        .bottom-border-accent {
+            height: 3px;
+            background: var(--deep-blue);
+            width: 100%;
+        }
+
+        /* container */
+        .container {
+            max-width: 780px;
+            margin: 2.5rem auto;
+            padding: 0 1.5rem;
+        }
+
+        /* card steps */
+        .step-card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: var(--shadow-md);
+            padding: 1.8rem 2rem;
+            margin-bottom: 2rem;
+            transition: all 0.2s ease;
+            border: 1px solid var(--border-light);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #eef2ff;
+            padding-bottom: 0.75rem;
+        }
+
+        .step-badge {
+            background: var(--deep-blue);
+            color: white;
+            width: 34px;
+            height: 34px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            border-radius: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .step-card h2 {
+            font-size: 1.35rem;
+            font-weight: 600;
+            color: #0c4e6e;
+        }
+
+        .desc-text {
+            color: #475569;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .census-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: #eef2ff;
+            border: 1.5px solid var(--deep-blue);
+            padding: 12px 18px;
+            border-radius: 60px;
+            text-decoration: none;
+            font-weight: 600;
+            color: var(--deep-blue);
+            transition: all 0.25s;
+            width: 100%;
+            font-size: 1rem;
+        }
+
+        .census-btn:hover {
+            background: var(--deep-blue);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px rgba(0,43,92,0.2);
+        }
+
+        /* form styles */
+        .form-grid {
+            margin-top: 0.5rem;
+        }
+
+        .field-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            color: #1e293b;
+        }
+
+        .required-star {
+            color: var(--error);
+            font-size: 1rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 14px;
+            font-family: 'Inter', monospace;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            background: #fff;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--deep-blue);
+            box-shadow: 0 0 0 3px rgba(0,43,92,0.15);
+        }
+
+        .error-message {
+            font-size: 0.75rem;
+            color: var(--error);
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        input.error-input, select.error-input {
+            border-color: var(--error);
+            background-color: #fff5f5;
+        }
+
+        .btn-submit {
+            background: var(--saffron);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            width: 100%;
+            font-weight: 700;
+            font-size: 1rem;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .btn-submit:hover {
+            background: #e07a00;
+            transform: scale(0.98);
+            box-shadow: 0 4px 12px rgba(255,140,0,0.3);
+        }
+
+        .btn-submit:disabled {
+            background: #b9a07c;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-msg {
+            margin-top: 20px;
+            padding: 12px 16px;
+            border-radius: 60px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            text-align: center;
+            display: none;
+        }
+
+        .status-success {
+            background: #e0f2e9;
+            color: #0a5c2e;
+            border-left: 5px solid var(--green);
+        }
+
+        .status-error {
+            background: #fee9e6;
+            color: #b91c1c;
+            border-left: 5px solid var(--error);
+        }
+
+        .info-note {
+            background: #f8fafc;
+            padding: 10px 14px;
+            border-radius: 16px;
+            font-size: 0.75rem;
+            color: #334155;
+            margin-top: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid #e2edf2;
+        }
+
+        footer {
+            background: #0f2b3d;
+            color: #cbd5e6;
+            text-align: center;
+            padding: 1.8rem;
+            font-size: 0.8rem;
+            margin-top: 3rem;
+            border-top: 4px solid var(--saffron);
+        }
+
+        @media (max-width: 640px) {
+            .step-card { padding: 1.5rem; }
+            .title-group h1 { font-size: 1.3rem; }
+            .emblem { height: 65px; }
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .lock-placeholder {
+            text-align: center;
+            background: #f9f9fb;
+            padding: 24px 12px;
+            border-radius: 24px;
+            color: #5a6874;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+<div class="top-tricolor"></div>
+<div class="header-main">
+    <div class="header-container">
+        <div class="brand">
+            <!-- LOCAL LOGO PATH as requested: C:\Users\Arvind\Desktop\census\logo2.png -->
+            <img src="C:\Users\Arvind\Desktop\census\logo2.png" alt="Bidar District Logo" class="emblem" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Emblem_of_Karnataka.svg/200px-Emblem_of_Karnataka.svg.png'">
+            <div class="title-group">
+                <h1>Deputy Commissioner Office<br>Bidar District</h1>
+                <div class="sub">CENSUS SELF ENUMERATION • OFFICIAL RECORDS PORTAL</div>
+            </div>
+        </div>
+    </div>
+    <div class="bottom-border-accent"></div>
+</div>
+
+<div class="container">
+    <!-- STEP 1 : Census Portal Link -->
+    <div class="step-card">
+        <div class="step-header">
+            <span class="step-badge">1</span>
+            <h2>Self Enumeration (SE) Registration</h2>
+        </div>
+        <p class="desc-text">Visit the official National Census portal to complete your self-enumeration process and obtain your <strong>SE ID</strong> (Format: H followed by 11 digits, e.g., H57203902143).</p>
+        <a href="http://se.census.gov.in/" target="_blank" rel="noopener noreferrer" class="census-btn" id="censusPortalBtn">
+            <span>🔗</span> Open Official Census Website
+        </a>
+        <div class="info-note">
+            <span>ℹ️</span> After successful enumeration, you will receive a unique SE ID. Keep it ready to fill the official submission form below.
+        </div>
+    </div>
+
+    <!-- STEP 2 : DC Office Submission (Initially locked) -->
+    <div class="step-card" id="step2Card">
+        <div class="step-header">
+            <span class="step-badge">2</span>
+            <h2>Departmental Census Record Submission</h2>
+        </div>
+        <div id="formLockedPlaceholder" class="lock-placeholder">
+            🔒 Please complete Step 1 (click the Census Portal link) to unlock this official submission form.
+        </div>
+        <div id="dynamicFormContainer" style="display: none;">
+            <form id="bidarCensusForm" novalidate>
+                <div class="form-grid">
+                    <!-- Department Dropdown -->
+                    <div class="field-group" id="deptGroup">
+                        <label>Select Department <span class="required-star">*</span></label>
+                        <select name="department" id="department">
+                            <option value="">-- Select Department --</option>
+                            <option>AGRICULTURE / HORTICULTURE / SERICULTURE</option>
+                            <option>ANIMAL HUSBANDARY AND FISHERIES</option>
+                            <option>BACKWARD CLASS WELFARE</option>
+                            <option>COMMERCE AND INDUSTRIES</option>
+                            <option>CO-OPERATION</option>
+                            <option>PERSONNEL AND ADMINISTRATIVE REFORMS (DPAR)</option>
+                            <option>DPAR( ADMINISTRATIVE REFORMS)</option>
+                            <option>DPAR ( e-GOVERNANCE)</option>
+                            <option>DPAR (JANASPANDANA)</option>
+                            <option>HIGHER EDUCATION</option>
+                            <option>PRIMARY AND SECONDARY EDUCATION</option>
+                            <option>ENERGY</option>
+                            <option>FINANCE</option>
+                            <option>FOOD AND CIVIL SUPPLIES</option>
+                            <option>FOREST, ECOLOGY AND ENVIRONMENT</option>
+                            <option>HEALTH AND FAMILY WELFARE</option>
+                            <option>WOMEN AND CHILD WELFARE</option>
+                            <option>HOUSING</option>
+                            <option>INFRASTRUCTURE DEVELOPMENT, PORTS AND INLAND WATER TRANSPORT</option>
+                            <option>INFORMATION TECHNOLOGY AND BIO TECHNOLOGY</option>
+                            <option>KANNADA AND CULTURE</option>
+                            <option>LABOUR</option>
+                            <option>LAW</option>
+                            <option>MEDICAL EDUCATION</option>
+                            <option>MINOR IRRIGATION</option>
+                            <option>MINORITY WELFARE</option>
+                            <option>PARLIAMENTRY AFFAIRS</option>
+                            <option>PLANNING</option>
+                            <option>PUBLIC ENTERPRISES</option>
+                            <option>PUBLIC WORKS</option>
+                            <option>RURAL DEVELOPMENT AND PANCHAYAT RAJ</option>
+                            <option>REVENUE</option>
+                            <option>INFORMATION AND PUBLIC RELATIONS</option>
+                            <option>SKILL DEVELOPMENT ENTREPRENEURSHIP AND LIVELIHOOD</option>
+                            <option>SOCIAL WELFARE</option>
+                            <option>TOURISM</option>
+                            <option>TRANSPORT</option>
+                            <option>URBAN DEVELOPMENT</option>
+                            <option>WATER RESOURCES</option>
+                            <option>DEPARTMENT OF HOME</option>
+                            <option>YOUTH EMPOWERMENT AND SPORTS</option>
+                            <option>POLICE DEPARTMENT</option>
+                            <option>ZILLA PANCHAYAT</option>
+                            <option>SURVEY DEPARTMENT</option>
+                            <option>DISTRICT REGISTRAR & SOCIETIES</option>
+                            <option>ENDOWMENT DEPARTMENT</option>
+                            <option>SUB REGISTER</option>
+                            <option>UNIVERSITY</option>
+                            <option>OTHER DEPARTMENT</option>
+                        </select>
+                        <div class="error-message" id="deptError"></div>
+                    </div>
+
+                    <!-- SE ID Field with strict validation H + 11 digits -->
+                    <div class="field-group" id="seidGroup">
+                        <label>Self Enumeration ID (SE ID) <span class="required-star">*</span></label>
+                        <input type="text" name="se_id" id="seId" placeholder="H57203902143" autocomplete="off">
+                        <div class="error-message" id="seIdError"></div>
+                        <div class="info-note" style="margin-top: 6px; background:#fef9e3;">✅ Format: Must start with 'H' followed by exactly 11 digits (Example: H57203902143)</div>
+                    </div>
+
+                    <!-- Full Name -->
+                    <div class="field-group" id="nameGroup">
+                        <label>Full Name <span class="required-star">*</span></label>
+                        <input type="text" name="name" id="fullName" placeholder="Enter complete name">
+                        <div class="error-message" id="nameError"></div>
+                    </div>
+
+                    <!-- Mobile Number -->
+                    <div class="field-group" id="mobileGroup">
+                        <label>Mobile Number <span class="required-star">*</span></label>
+                        <input type="tel" name="mobile" id="mobileNumber" maxlength="10" placeholder="9876543210">
+                        <div class="error-message" id="mobileError"></div>
+                    </div>
+
+                    <button type="submit" class="btn-submit" id="submitBtn">📥 Submit to DC Records</button>
+                </div>
+            </form>
+            <div id="globalStatusMsg" class="status-msg"></div>
+            <div class="info-note" style="margin-top: 20px;">
+                📌 By submitting, you confirm that the SE ID and details are accurate as per Census self-enumeration records. Data will be stored in official DC Office database.
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p>Deputy Commissioner Office, Bidar District, Karnataka | National Census 2026-27 - Self Enumeration Integration</p>
+    <p style="margin-top: 8px; opacity:0.7;">Official record keeping system | For any discrepancy contact DC Office Bidar</p>
+</footer>
+
+<script>
+    // Google Apps Script Web App URL (exactly as provided)
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwacf5D95MMOgyUNfc8S5ezDcSQ2c144gP3jAqrknPnNGJ4XniJ7RFUO5Ir41hP9n6DFw/exec';
+    
+    // DOM elements
+    const censusLink = document.getElementById('censusPortalBtn');
+    const lockedPlaceholder = document.getElementById('formLockedPlaceholder');
+    const formContainer = document.getElementById('dynamicFormContainer');
+    const form = document.getElementById('bidarCensusForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const globalStatus = document.getElementById('globalStatusMsg');
+
+    // Input fields
+    const departmentSelect = document.getElementById('department');
+    const seIdInput = document.getElementById('seId');
+    const fullNameInput = document.getElementById('fullName');
+    const mobileInput = document.getElementById('mobileNumber');
+
+    // Error containers
+    const deptError = document.getElementById('deptError');
+    const seIdError = document.getElementById('seIdError');
+    const nameError = document.getElementById('nameError');
+    const mobileError = document.getElementById('mobileError');
+
+    // flag to check if step1 completed (census portal visited via click)
+    let step1Completed = false;
+
+    // ------------------- VALIDATION HELPERS -------------------
+    function clearFieldErrors() {
+        deptError.innerText = '';
+        seIdError.innerText = '';
+        nameError.innerText = '';
+        mobileError.innerText = '';
+        // remove error class from inputs
+        departmentSelect.classList.remove('error-input');
+        seIdInput.classList.remove('error-input');
+        fullNameInput.classList.remove('error-input');
+        mobileInput.classList.remove('error-input');
+    }
+
+    // specific SE ID validation: must start with H (uppercase) followed by exactly 11 digits
+    function validateSeId(seIdValue) {
+        const trimmed = seIdValue.trim();
+        if (trimmed === '') return { valid: false, message: 'SE ID is required.' };
+        const regex = /^H\d{11}$/;  // H followed by 11 digits
+        if (!regex.test(trimmed)) {
+            return { valid: false, message: 'Invalid SE ID format. Must start with "H" followed by 11 digits (e.g., H57203902143).' };
+        }
+        return { valid: true, message: '' };
+    }
+
+    function validateDepartment(value) {
+        if (!value || value === '') return { valid: false, message: 'Please select a department.' };
+        return { valid: true, message: '' };
+    }
+
+    function validateName(value) {
+        const trimmed = value.trim();
+        if (trimmed === '') return { valid: false, message: 'Full name is required.' };
+        if (trimmed.length < 2) return { valid: false, message: 'Name must be at least 2 characters.' };
+        if (/[^a-zA-Z\s\.\-']/.test(trimmed)) return { valid: false, message: 'Name contains invalid characters.' };
+        return { valid: true, message: '' };
+    }
+
+    function validateMobile(value) {
+        const trimmed = value.trim();
+        if (trimmed === '') return { valid: false, message: 'Mobile number is required.' };
+        const mobileRegex = /^[6-9]\d{9}$/;  // Indian mobile number pattern
+        if (!mobileRegex.test(trimmed)) {
+            return { valid: false, message: 'Enter a valid 10-digit mobile number (starting with 6-9).' };
+        }
+        return { valid: true, message: '' };
+    }
+
+    // full form validation
+    function validateFullForm() {
+        clearFieldErrors();
+        let isValid = true;
+
+        // department
+        const deptValid = validateDepartment(departmentSelect.value);
+        if (!deptValid.valid) {
+            deptError.innerText = deptValid.message;
+            departmentSelect.classList.add('error-input');
+            isValid = false;
+        }
+
+        // SE ID
+        const seValid = validateSeId(seIdInput.value);
+        if (!seValid.valid) {
+            seIdError.innerText = seValid.message;
+            seIdInput.classList.add('error-input');
+            isValid = false;
+        }
+
+        // Name
+        const nameValid = validateName(fullNameInput.value);
+        if (!nameValid.valid) {
+            nameError.innerText = nameValid.message;
+            fullNameInput.classList.add('error-input');
+            isValid = false;
+        }
+
+        // Mobile
+        const mobileValid = validateMobile(mobileInput.value);
+        if (!mobileValid.valid) {
+            mobileError.innerText = mobileValid.message;
+            mobileInput.classList.add('error-input');
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    // realtime formatting: restrict mobile to digits
+    mobileInput.addEventListener('input', function(e) {
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0,10);
+    });
+
+    // SE ID automatic uppercase correction for H (friendly)
+    seIdInput.addEventListener('blur', function() {
+        let val = this.value.trim();
+        if (val.length > 0) {
+            if (val[0] === 'h') val = 'H' + val.slice(1);
+            this.value = val;
+        }
+    });
+
+    // also on input for seid, to keep only H and digits
+    seIdInput.addEventListener('input', function(e) {
+        let raw = this.value;
+        let upperFirst = raw;
+        if (raw.length > 0 && raw[0] === 'h') upperFirst = 'H' + raw.slice(1);
+        else upperFirst = raw;
+        let filtered = upperFirst.charAt(0) === 'H' ? 'H' + upperFirst.slice(1).replace(/[^0-9]/g, '') : upperFirst.replace(/[^0-9]/g, '');
+        if (filtered.length > 0 && filtered[0] !== 'H' && raw.length > 0) {
+            filtered = filtered.replace(/[^0-9]/g, '');
+        }
+        if (filtered.length > 12) filtered = filtered.slice(0,12);
+        if (filtered.length > 0 && filtered[0] === 'H' && filtered.length > 1) {
+            const digitsPart = filtered.slice(1);
+            if (digitsPart.length > 11) filtered = 'H' + digitsPart.slice(0,11);
+        }
+        this.value = filtered;
+    });
+
+    // Step 1: clicking official census link unlocks form & sets step1Completed
+    censusLink.addEventListener('click', function(e) {
+        step1Completed = true;
+        lockedPlaceholder.style.display = 'none';
+        formContainer.style.display = 'block';
+        censusLink.style.backgroundColor = '#e0f2e9';
+        censusLink.style.borderColor = '#138808';
+        censusLink.innerHTML = '<span>✅</span> Census Portal Opened (Step 1 Complete)';
+        const infoDiv = document.querySelector('.step-card:first-child .info-note');
+        if (infoDiv) infoDiv.style.borderLeft = '3px solid #138808';
+    });
+
+    function isStep1Unlocked() {
+        if (!step1Completed) {
+            globalStatus.style.display = 'block';
+            globalStatus.className = 'status-msg status-error';
+            globalStatus.innerText = '⚠️ Access Denied: Please complete Step 1 (open Census website) before submitting the form.';
+            setTimeout(() => {
+                globalStatus.style.display = 'none';
+            }, 4000);
+            return false;
+        }
+        return true;
+    }
+
+    // Handle form submission
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        if (!isStep1Unlocked()) return;
+        
+        if (!validateFullForm()) {
+            const firstError = document.querySelector('.error-input');
+            if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            globalStatus.style.display = 'block';
+            globalStatus.className = 'status-msg status-error';
+            globalStatus.innerText = '❌ Please correct the errors highlighted above before submitting.';
+            setTimeout(() => { if(globalStatus) globalStatus.style.display = 'none'; }, 4000);
+            return;
+        }
+        
+        submitBtn.disabled = true;
+        const originalBtnHTML = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<span class="spinner"></span> Submitting to DC Records...';
+        
+        const formData = new FormData();
+        formData.append('department', departmentSelect.value);
+        formData.append('se_id', seIdInput.value.trim());
+        formData.append('name', fullNameInput.value.trim());
+        formData.append('mobile', mobileInput.value.trim());
+        
+        try {
+            await fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: formData
+            });
+            globalStatus.style.display = 'block';
+            globalStatus.className = 'status-msg status-success';
+            globalStatus.innerHTML = '✅ Success! Your census record has been submitted to Deputy Commissioner Office, Bidar. A confirmation will be maintained in official records.';
+            
+            form.reset();
+            clearFieldErrors();
+            seIdInput.value = '';
+            fullNameInput.value = '';
+            mobileInput.value = '';
+            departmentSelect.value = '';
+            
+            setTimeout(() => {
+                if(globalStatus) globalStatus.style.display = 'none';
+            }, 6000);
+            
+        } catch (error) {
+            console.error('Submission error:', error);
+            globalStatus.style.display = 'block';
+            globalStatus.className = 'status-msg status-error';
+            globalStatus.innerHTML = '⚠️ Network error. Please check your internet connection and try again. If issue persists, contact DC Office helpdesk.';
+            setTimeout(() => {
+                if(globalStatus) globalStatus.style.display = 'none';
+            }, 5000);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnHTML;
+        }
+    });
+    
+    const allInputs = [departmentSelect, seIdInput, fullNameInput, mobileInput];
+    allInputs.forEach(field => {
+        field.addEventListener('focus', () => {
+            field.classList.remove('error-input');
+            if (field === departmentSelect) deptError.innerText = '';
+            if (field === seIdInput) seIdError.innerText = '';
+            if (field === fullNameInput) nameError.innerText = '';
+            if (field === mobileInput) mobileError.innerText = '';
+        });
+    });
+    
+    window.addEventListener('DOMContentLoaded', () => {
+        lockedPlaceholder.style.display = 'block';
+        formContainer.style.display = 'none';
+        step1Completed = false;
+        globalStatus.style.display = 'none';
+    });
+</script>
+</body>
+</html>
