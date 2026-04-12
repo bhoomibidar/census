@@ -185,6 +185,42 @@
             box-shadow: 0 8px 18px rgba(0,43,92,0.2);
         }
 
+        /* unlock checkbox styling */
+        .unlock-section {
+            background: #f8fafd;
+            border-radius: 20px;
+            padding: 1rem 1.2rem;
+            margin: 1rem 0 0.5rem 0;
+            border: 1px solid #dee4ed;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .unlock-checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: #0b3550;
+        }
+        .unlock-checkbox-label input {
+            width: 20px;
+            height: 20px;
+            margin: 0;
+            accent-color: var(--deep-blue);
+            cursor: pointer;
+        }
+        .unlock-hint {
+            font-size: 0.75rem;
+            color: #5a6e7c;
+            background: #ffffffcc;
+            padding: 4px 10px;
+            border-radius: 30px;
+        }
+
         /* form styles */
         .form-grid {
             margin-top: 0.5rem;
@@ -320,6 +356,7 @@
             .step-card { padding: 1.5rem; }
             .title-group h1 { font-size: 1.3rem; }
             .emblem { height: 65px; }
+            .unlock-section { flex-direction: column; align-items: flex-start; }
         }
 
         .spinner {
@@ -343,6 +380,7 @@
             border-radius: 24px;
             color: #5a6874;
             font-weight: 500;
+            margin-top: 12px;
         }
     </style>
 </head>
@@ -351,7 +389,7 @@
 <div class="header-main">
     <div class="header-container">
         <div class="brand">
-            <!-- CORRECTED: relative path for GitHub Pages (logo2.png in same folder) -->
+            <!-- local logo2.png (GitHub Pages) -->
             <img src="logo2.png" alt="Bidar District Logo" class="emblem" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Emblem_of_Karnataka.svg/200px-Emblem_of_Karnataka.svg.png'">
             <div class="title-group">
                 <h1>Deputy Commissioner Office<br>Bidar District</h1>
@@ -378,14 +416,24 @@
         </div>
     </div>
 
-    <!-- STEP 2 : DC Office Submission (Initially locked) -->
+    <!-- STEP 2 : DC Office Submission (with dual unlock: link OR manual confirmation) -->
     <div class="step-card" id="step2Card">
         <div class="step-header">
             <span class="step-badge">2</span>
             <h2>Departmental Census Record Submission</h2>
         </div>
+        
+        <!-- New Unlock Section: Allows users who already completed SE to access form directly -->
+        <div class="unlock-section">
+            <label class="unlock-checkbox-label">
+                <input type="checkbox" id="unlockCheckbox"> 
+                <span>✅ I have already completed Self Enumeration (SE) on census portal & possess a valid SE ID</span>
+            </label>
+            <div class="unlock-hint">📌 Check this box if you already have your SE ID (H followed by 11 digits). No need to click the link above again.</div>
+        </div>
+
         <div id="formLockedPlaceholder" class="lock-placeholder">
-            🔒 Please complete Step 1 (click the Census Portal link) to unlock this official submission form.
+            🔒 Please complete Step 1 (click the Census Portal link) OR check the box above (if already registered) to unlock this official submission form.
         </div>
         <div id="dynamicFormContainer" style="display: none;">
             <form id="bidarCensusForm" novalidate>
@@ -395,8 +443,10 @@
                         <label>Select Department <span class="required-star">*</span></label>
                         <select name="department" id="department">
                             <option value="">-- Select Department --</option>
-                            <option>AGRICULTURE / HORTICULTURE / SERICULTURE</option>
-                            <option>ANIMAL HUSBANDARY AND FISHERIES</option>
+                            <option>AGRICULTURE </option>
+			    <option>HORTICULTURE </option>
+			    <option>SERICULTURE</option>
+			    <option>ANIMAL HUSBANDARY AND FISHERIES</option>
                             <option>BACKWARD CLASS WELFARE</option>
                             <option>COMMERCE AND INDUSTRIES</option>
                             <option>CO-OPERATION</option>
@@ -459,7 +509,7 @@
                     <!-- Full Name -->
                     <div class="field-group" id="nameGroup">
                         <label>Full Name <span class="required-star">*</span></label>
-                        <input type="text" name="name" id="fullName" placeholder="Enter complete name">
+                        <input type="text" name="name" id="fullName" placeholder="Enter Full name">
                         <div class="error-message" id="nameError"></div>
                     </div>
 
@@ -470,7 +520,7 @@
                         <div class="error-message" id="mobileError"></div>
                     </div>
 
-                    <button type="submit" class="btn-submit" id="submitBtn">📥 Submit </button>
+                    <button type="submit" class="btn-submit" id="submitBtn">📥 Submit to DC Records</button>
                 </div>
             </form>
             <div id="globalStatusMsg" class="status-msg"></div>
@@ -497,6 +547,7 @@
     const form = document.getElementById('bidarCensusForm');
     const submitBtn = document.getElementById('submitBtn');
     const globalStatus = document.getElementById('globalStatusMsg');
+    const unlockCheckbox = document.getElementById('unlockCheckbox');
 
     // Input fields
     const departmentSelect = document.getElementById('department');
@@ -510,10 +561,48 @@
     const nameError = document.getElementById('nameError');
     const mobileError = document.getElementById('mobileError');
 
-    // flag to check if step1 completed (census portal visited via click)
-    let step1Completed = false;
+    // ----- STATE FLAGS -----
+    let censusLinkClicked = false;    // true if user clicked the official census portal link
+    let manualUnlock = false;         // true if user manually checks "already completed SE" checkbox
 
-    // ------------------- VALIDATION HELPERS -------------------
+    // ----- HELPER: Update visibility of Step2 (form vs locked placeholder) based on flags -----
+    function updateStep2Visibility() {
+        const isUnlocked = censusLinkClicked || manualUnlock;
+        if (isUnlocked) {
+            lockedPlaceholder.style.display = 'none';
+            formContainer.style.display = 'block';
+        } else {
+            lockedPlaceholder.style.display = 'block';
+            formContainer.style.display = 'none';
+            // Also clear any global status that might be misleading
+            if (globalStatus) globalStatus.style.display = 'none';
+        }
+    }
+
+    // Sync checkbox state with manualUnlock flag (when external changes happen)
+    function syncCheckboxFromFlags() {
+        if (unlockCheckbox.checked !== manualUnlock) {
+            unlockCheckbox.checked = manualUnlock;
+        }
+    }
+
+    // Unlock via manual checkbox toggle
+    function onManualUnlockChange() {
+        manualUnlock = unlockCheckbox.checked;
+        updateStep2Visibility();
+        // If user unlocks via checkbox, we don't override censusLinkClicked flag, just keep both.
+        // Also when manualUnlock becomes false and censusLinkClicked false, form hides.
+        // Provide optional feedback
+        if (manualUnlock) {
+            // small optional hint (non-intrusive)
+            if (!censusLinkClicked) {
+                const tempMsg = document.createElement('div');
+                // No permanent spam, just a subtle UI info note inside step2 maybe? we can show status quickly but avoid.
+            }
+        }
+    }
+
+    // ----- Validation helpers (unchanged logic but robust) -----
     function clearFieldErrors() {
         deptError.innerText = '';
         seIdError.innerText = '';
@@ -593,6 +682,97 @@
         return isValid;
     }
 
+    // ----- Submit guard: checks if step2 is unlocked (either by link or checkbox) -----
+    function isStep2Unlocked() {
+        const unlocked = censusLinkClicked || manualUnlock;
+        if (!unlocked) {
+            globalStatus.style.display = 'block';
+            globalStatus.className = 'status-msg status-error';
+            globalStatus.innerText = '⚠️ Access Denied: Please complete Step 1 (click Census Portal link) OR check the box confirming you already have a valid SE ID.';
+            setTimeout(() => { if(globalStatus) globalStatus.style.display = 'none'; }, 4000);
+            return false;
+        }
+        return true;
+    }
+
+    // ----- Handle Census Link Click (unlock + update UI) -----
+    function onCensusLinkClick(e) {
+        // Mark that the user has clicked the official link (Step1 completed)
+        censusLinkClicked = true;
+        // Also reflect in manual unlock? For better UX, we auto-check the checkbox as well.
+        // But we do not force manualUnlock flag to avoid conflict; we set checkbox checked and manualUnlock true.
+        manualUnlock = true;
+        if (unlockCheckbox) unlockCheckbox.checked = true;
+        updateStep2Visibility();
+        
+        // Visual feedback on link button
+        censusLink.style.backgroundColor = '#e0f2e9';
+        censusLink.style.borderColor = '#138808';
+        censusLink.innerHTML = '<span>✅</span> Census Portal Opened (Step 1 Complete)';
+        const infoDiv = document.querySelector('.step-card:first-child .info-note');
+        if (infoDiv) infoDiv.style.borderLeft = '3px solid #138808';
+        
+        // Optional status notification
+        globalStatus.style.display = 'block';
+        globalStatus.className = 'status-msg status-success';
+        globalStatus.innerText = '✅ Step 1 confirmed. You can now fill the departmental submission form below.';
+        setTimeout(() => { if(globalStatus) globalStatus.style.display = 'none'; }, 3000);
+    }
+
+    // ----- Form submission (POST to Google Apps Script) -----
+    async function handleFormSubmit(e) {
+        e.preventDefault();
+        
+        // Double-check unlock status before submission
+        if (!isStep2Unlocked()) return;
+        
+        if (!validateFullForm()) {
+            const firstError = document.querySelector('.error-input');
+            if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            globalStatus.style.display = 'block';
+            globalStatus.className = 'status-msg status-error';
+            globalStatus.innerText = '❌ Please correct the errors highlighted above before submitting.';
+            setTimeout(() => { if(globalStatus) globalStatus.style.display = 'none'; }, 4000);
+            return;
+        }
+        
+        submitBtn.disabled = true;
+        const originalBtnHTML = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<span class="spinner"></span> Submitting to DC Records...';
+        
+        const formData = new FormData();
+        formData.append('department', departmentSelect.value);
+        formData.append('se_id', seIdInput.value.trim());
+        formData.append('name', fullNameInput.value.trim());
+        formData.append('mobile', mobileInput.value.trim());
+        
+        try {
+            // Using no-cors because the Apps Script is configured to accept POST
+            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: formData });
+            globalStatus.style.display = 'block';
+            globalStatus.className = 'status-msg status-success';
+            globalStatus.innerHTML = '✅ Success! Your census record has been submitted to Deputy Commissioner Office, Bidar. A confirmation will be maintained in official records.';
+            form.reset();
+            clearFieldErrors();
+            // Optionally reset only SE ID, name, mobile, department but we keep fields empty after reset
+            departmentSelect.value = '';
+            seIdInput.value = '';
+            fullNameInput.value = '';
+            mobileInput.value = '';
+            setTimeout(() => { if(globalStatus) globalStatus.style.display = 'none'; }, 6000);
+        } catch (error) {
+            console.error("Submission error", error);
+            globalStatus.style.display = 'block';
+            globalStatus.className = 'status-msg status-error';
+            globalStatus.innerHTML = '⚠️ Network error. Please check your internet connection and try again.';
+            setTimeout(() => { if(globalStatus) globalStatus.style.display = 'none'; }, 5000);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnHTML;
+        }
+    }
+
+    // ----- Input sanitization & listeners (mobile, SE ID formatting) -----
     mobileInput.addEventListener('input', function(e) {
         this.value = this.value.replace(/[^0-9]/g, '').slice(0,10);
     });
@@ -617,76 +797,9 @@
         this.value = filtered;
     });
 
-    censusLink.addEventListener('click', function(e) {
-        step1Completed = true;
-        lockedPlaceholder.style.display = 'none';
-        formContainer.style.display = 'block';
-        censusLink.style.backgroundColor = '#e0f2e9';
-        censusLink.style.borderColor = '#138808';
-        censusLink.innerHTML = '<span>✅</span> Census Portal Opened (Step 1 Complete)';
-        const infoDiv = document.querySelector('.step-card:first-child .info-note');
-        if (infoDiv) infoDiv.style.borderLeft = '3px solid #138808';
-    });
-
-    function isStep1Unlocked() {
-        if (!step1Completed) {
-            globalStatus.style.display = 'block';
-            globalStatus.className = 'status-msg status-error';
-            globalStatus.innerText = '⚠️ Access Denied: Please complete Step 1 (open Census website) before submitting the form.';
-            setTimeout(() => { globalStatus.style.display = 'none'; }, 4000);
-            return false;
-        }
-        return true;
-    }
-
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if (!isStep1Unlocked()) return;
-        if (!validateFullForm()) {
-            const firstError = document.querySelector('.error-input');
-            if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            globalStatus.style.display = 'block';
-            globalStatus.className = 'status-msg status-error';
-            globalStatus.innerText = '❌ Please correct the errors highlighted above before submitting.';
-            setTimeout(() => { if(globalStatus) globalStatus.style.display = 'none'; }, 4000);
-            return;
-        }
-        
-        submitBtn.disabled = true;
-        const originalBtnHTML = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<span class="spinner"></span> Submitting to DC Records...';
-        
-        const formData = new FormData();
-        formData.append('department', departmentSelect.value);
-        formData.append('se_id', seIdInput.value.trim());
-        formData.append('name', fullNameInput.value.trim());
-        formData.append('mobile', mobileInput.value.trim());
-        
-        try {
-            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: formData });
-            globalStatus.style.display = 'block';
-            globalStatus.className = 'status-msg status-success';
-            globalStatus.innerHTML = '✅ Success! Your census record has been submitted to Deputy Commissioner Office, Bidar. A confirmation will be maintained in official records.';
-            form.reset();
-            clearFieldErrors();
-            seIdInput.value = '';
-            fullNameInput.value = '';
-            mobileInput.value = '';
-            departmentSelect.value = '';
-            setTimeout(() => { if(globalStatus) globalStatus.style.display = 'none'; }, 6000);
-        } catch (error) {
-            globalStatus.style.display = 'block';
-            globalStatus.className = 'status-msg status-error';
-            globalStatus.innerHTML = '⚠️ Network error. Please check your internet connection and try again.';
-            setTimeout(() => { if(globalStatus) globalStatus.style.display = 'none'; }, 5000);
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalBtnHTML;
-        }
-    });
-    
-    const allInputs = [departmentSelect, seIdInput, fullNameInput, mobileInput];
-    allInputs.forEach(field => {
+    // Clear field errors on focus
+    const allFieldInputs = [departmentSelect, seIdInput, fullNameInput, mobileInput];
+    allFieldInputs.forEach(field => {
         field.addEventListener('focus', () => {
             field.classList.remove('error-input');
             if (field === departmentSelect) deptError.innerText = '';
@@ -695,12 +808,27 @@
             if (field === mobileInput) mobileError.innerText = '';
         });
     });
+
+    // ----- Attach event listeners -----
+    censusLink.addEventListener('click', onCensusLinkClick);
+    unlockCheckbox.addEventListener('change', onManualUnlockChange);
+    form.addEventListener('submit', handleFormSubmit);
     
+    // ----- Initialize on page load (locked state) -----
     window.addEventListener('DOMContentLoaded', () => {
-        lockedPlaceholder.style.display = 'block';
-        formContainer.style.display = 'none';
-        step1Completed = false;
+        // Reset all flags to initial state
+        censusLinkClicked = false;
+        manualUnlock = false;
+        unlockCheckbox.checked = false;
+        updateStep2Visibility();
         globalStatus.style.display = 'none';
+        // Reset form fields if any prefill
+        if (form) form.reset();
+        clearFieldErrors();
+        // ensure census button style is default
+        censusLink.style.backgroundColor = '';
+        censusLink.style.borderColor = '';
+        censusLink.innerHTML = '<span>🔗</span> Open Official Census Website';
     });
 </script>
 </body>
