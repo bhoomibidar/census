@@ -1,3 +1,5 @@
+Here is the updated HTML code with the mobile number field made optional. The star indicator has been removed, and the validation logic now accepts empty values while still validating the format when a number is entered.
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -423,7 +425,7 @@
             <h2>Departmental Census Record Submission</h2>
         </div>
         
-        <!-- New Unlock Section: Allows users who already completed SE to access form directly -->
+        <!-- Unlock Section: Allows users who already completed SE to access form directly -->
         <div class="unlock-section">
             <label class="unlock-checkbox-label">
                 <input type="checkbox" id="unlockCheckbox"> 
@@ -443,10 +445,10 @@
                         <label>Select Department <span class="required-star">*</span></label>
                         <select name="department" id="department">
                             <option value="">-- Select Department --</option>
-                            <option>AGRICULTURE </option>
-			    <option>HORTICULTURE </option>
-			    <option>SERICULTURE</option>
-			    <option>ANIMAL HUSBANDARY AND FISHERIES</option>
+                            <option>AGRICULTURE</option>
+                            <option>HORTICULTURE</option>
+                            <option>SERICULTURE</option>
+                            <option>ANIMAL HUSBANDARY AND FISHERIES</option>
                             <option>BACKWARD CLASS WELFARE</option>
                             <option>COMMERCE AND INDUSTRIES</option>
                             <option>CO-OPERATION</option>
@@ -513,11 +515,12 @@
                         <div class="error-message" id="nameError"></div>
                     </div>
 
-                    <!-- Mobile Number -->
+                    <!-- Mobile Number (Optional - no asterisk, no mandatory validation) -->
                     <div class="field-group" id="mobileGroup">
-                        <label>Mobile Number <span class="required-star">*</span></label>
+                        <label>Mobile Number (Optional)</label>
                         <input type="tel" name="mobile" id="mobileNumber" maxlength="10" placeholder="9876543210">
                         <div class="error-message" id="mobileError"></div>
+                        <div class="info-note" style="margin-top: 6px;">📱 If provided, must be a valid 10-digit number starting with 6-9.</div>
                     </div>
 
                     <button type="submit" class="btn-submit" id="submitBtn">📥 Submit to DC Records</button>
@@ -579,30 +582,13 @@
         }
     }
 
-    // Sync checkbox state with manualUnlock flag (when external changes happen)
-    function syncCheckboxFromFlags() {
-        if (unlockCheckbox.checked !== manualUnlock) {
-            unlockCheckbox.checked = manualUnlock;
-        }
-    }
-
     // Unlock via manual checkbox toggle
     function onManualUnlockChange() {
         manualUnlock = unlockCheckbox.checked;
         updateStep2Visibility();
-        // If user unlocks via checkbox, we don't override censusLinkClicked flag, just keep both.
-        // Also when manualUnlock becomes false and censusLinkClicked false, form hides.
-        // Provide optional feedback
-        if (manualUnlock) {
-            // small optional hint (non-intrusive)
-            if (!censusLinkClicked) {
-                const tempMsg = document.createElement('div');
-                // No permanent spam, just a subtle UI info note inside step2 maybe? we can show status quickly but avoid.
-            }
-        }
     }
 
-    // ----- Validation helpers (unchanged logic but robust) -----
+    // ----- Validation helpers (mobile is optional) -----
     function clearFieldErrors() {
         deptError.innerText = '';
         seIdError.innerText = '';
@@ -637,12 +623,13 @@
         return { valid: true, message: '' };
     }
 
+    // Mobile is now optional: if provided, must be valid; empty is allowed.
     function validateMobile(value) {
         const trimmed = value.trim();
-        if (trimmed === '') return { valid: false, message: 'Mobile number is required.' };
+        if (trimmed === '') return { valid: true, message: '' }; // Optional field
         const mobileRegex = /^[6-9]\d{9}$/;
         if (!mobileRegex.test(trimmed)) {
-            return { valid: false, message: 'Enter a valid 10-digit mobile number (starting with 6-9).' };
+            return { valid: false, message: 'Enter a valid 10-digit mobile number starting with 6-9 (or leave empty).' };
         }
         return { valid: true, message: '' };
     }
@@ -697,10 +684,7 @@
 
     // ----- Handle Census Link Click (unlock + update UI) -----
     function onCensusLinkClick(e) {
-        // Mark that the user has clicked the official link (Step1 completed)
         censusLinkClicked = true;
-        // Also reflect in manual unlock? For better UX, we auto-check the checkbox as well.
-        // But we do not force manualUnlock flag to avoid conflict; we set checkbox checked and manualUnlock true.
         manualUnlock = true;
         if (unlockCheckbox) unlockCheckbox.checked = true;
         updateStep2Visibility();
@@ -712,7 +696,6 @@
         const infoDiv = document.querySelector('.step-card:first-child .info-note');
         if (infoDiv) infoDiv.style.borderLeft = '3px solid #138808';
         
-        // Optional status notification
         globalStatus.style.display = 'block';
         globalStatus.className = 'status-msg status-success';
         globalStatus.innerText = '✅ Step 1 confirmed. You can now fill the departmental submission form below.';
@@ -723,7 +706,6 @@
     async function handleFormSubmit(e) {
         e.preventDefault();
         
-        // Double-check unlock status before submission
         if (!isStep2Unlocked()) return;
         
         if (!validateFullForm()) {
@@ -744,17 +726,15 @@
         formData.append('department', departmentSelect.value);
         formData.append('se_id', seIdInput.value.trim());
         formData.append('name', fullNameInput.value.trim());
-        formData.append('mobile', mobileInput.value.trim());
+        formData.append('mobile', mobileInput.value.trim()); // may be empty, allowed
         
         try {
-            // Using no-cors because the Apps Script is configured to accept POST
             await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: formData });
             globalStatus.style.display = 'block';
             globalStatus.className = 'status-msg status-success';
             globalStatus.innerHTML = '✅ Success! Your census record has been submitted to Deputy Commissioner Office, Bidar. A confirmation will be maintained in official records.';
             form.reset();
             clearFieldErrors();
-            // Optionally reset only SE ID, name, mobile, department but we keep fields empty after reset
             departmentSelect.value = '';
             seIdInput.value = '';
             fullNameInput.value = '';
@@ -772,7 +752,7 @@
         }
     }
 
-    // ----- Input sanitization & listeners (mobile, SE ID formatting) -----
+    // ----- Input sanitization & listeners -----
     mobileInput.addEventListener('input', function(e) {
         this.value = this.value.replace(/[^0-9]/g, '').slice(0,10);
     });
@@ -816,16 +796,13 @@
     
     // ----- Initialize on page load (locked state) -----
     window.addEventListener('DOMContentLoaded', () => {
-        // Reset all flags to initial state
         censusLinkClicked = false;
         manualUnlock = false;
         unlockCheckbox.checked = false;
         updateStep2Visibility();
         globalStatus.style.display = 'none';
-        // Reset form fields if any prefill
         if (form) form.reset();
         clearFieldErrors();
-        // ensure census button style is default
         censusLink.style.backgroundColor = '';
         censusLink.style.borderColor = '';
         censusLink.innerHTML = '<span>🔗</span> Open Official Census Website';
@@ -833,3 +810,4 @@
 </script>
 </body>
 </html>
+```
